@@ -165,20 +165,23 @@ TESTS = [
     # TEMPORARILY DISABLED to skip straight to qwen2.5_vl_3b/smolvlm2 while verifying
     # the new VLM-default-prompt test entries. Re-enable once those two are confirmed.
     # {"name": "gemma3",      "compile_script": "models/gemma3/gemma3_test.py",                   "run_from_bin_script": None,                                       "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "gemma4_e2b",  "compile_script": "models/gemma4_e2b/gemma4_e2b_test.py",            "run_from_bin_script": "models/gemma4_e2b/gemma4_e2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "gemma4_e4b",  "compile_script": "models/gemma4_e4b/gemma4_e4b_test.py",            "run_from_bin_script": "models/gemma4_e4b/gemma4_e4b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "llama3.2_1b", "compile_script": "models/llama3.2_1b/llama3.2_1b_test.py",          "run_from_bin_script": "models/llama3.2_1b/llama3.2_1b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "llama3.2_3b", "compile_script": "models/llama3.2_3b/llama3.2_3b_test.py",          "run_from_bin_script": "models/llama3.2_3b/llama3.2_3b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "qwen3_1.7b",  "compile_script": "models/qwen3_1.7b/qwen3_1.7b_test.py",            "run_from_bin_script": "models/qwen3_1.7b/qwen3_1.7b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "qwen3_4b",    "compile_script": "models/qwen3_4b/qwen3_4b_test.py",                "run_from_bin_script": "models/qwen3_4b/qwen3_4b_run_from_bin.py",                "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # {"name": "qwen3.5_2b",  "compile_script": "models/qwen3.5_2b/qwen3.5_2b_test.py",            "run_from_bin_script": "models/qwen3.5_2b/qwen3.5_2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "gemma4_e2b",  "compile_script": "models/gemma4_e2b/gemma4_e2b_test.py",            "run_from_bin_script": None,            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "gemma4_e4b",  "compile_script": "models/gemma4_e4b/gemma4_e4b_test.py",            "run_from_bin_script": None,            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "llama3.2_1b", "compile_script": "models/llama3.2_1b/llama3.2_1b_test.py",          "run_from_bin_script": None,          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "llama3.2_3b", "compile_script": "models/llama3.2_3b/llama3.2_3b_test.py",          "run_from_bin_script": None,          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3_1.7b",  "compile_script": "models/qwen3_1.7b/qwen3_1.7b_test.py",            "run_from_bin_script": None,            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3_4b",    "compile_script": "models/qwen3_4b/qwen3_4b_test.py",                "run_from_bin_script": None,                "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3.5_2b",  "compile_script": "models/qwen3.5_2b/qwen3.5_2b_test.py",            "run_from_bin_script": None,            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
     # qwen2.5_vl_3b DEFAULTS to LM (text-only) with no image. --vision-enable switches
     # it to VLM mode using its own bundled default image (yosemite.jpg) and its own
     # default image-describe prompt — no --prompt/--image override needed.
-    {"name": "qwen2.5_vl_3b", "compile_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_test.py",    "run_from_bin_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_run_from_bin.py",      "pass_check": _check_qwen25vl, "extra_args": ["--vision-enable"]},
+    # run_from_bin_script is None: reruns compile_script, which self-detects the
+    # cached bin and does a real load-from-bin pass (its dedicated run_from_bin.py
+    # writes/expects mismatched filenames and isn't used anymore).
+    {"name": "qwen2.5_vl_3b", "compile_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_test.py",    "run_from_bin_script": None,      "pass_check": _check_qwen25vl, "extra_args": ["--vision-enable"]},
     # smolvlm2 DEFAULTS to VLM (bundled vette.jpg + "Describe this image.") — run it
     # with no overrides at all and check for a car-related word in the output.
-    {"name": "smolvlm2",    "compile_script": "models/smolvlm2/smolvlm2_test.py",                "run_from_bin_script": "models/smolvlm2/smolvlm2_run_from_bin.py",                "pass_check": _check_smolvlm2},
+    {"name": "smolvlm2",    "compile_script": "models/smolvlm2/smolvlm2_test.py",                "run_from_bin_script": None,                "pass_check": _check_smolvlm2},
 
     # GPT-2 is a base (non-chat) model: text continuation, no single correct answer,
     # so the check is lenient (non-empty generation). No run_from_bin yet.
@@ -191,10 +194,10 @@ TESTS = [
     {"name": "mobilenetv2_ssd",   "compile_script": "models/mobilenetv2/mobilenetv2_ssd_fpnlite_640_test.py",        "run_from_bin_script": None, "pass_check": _check_mbv2_ssd},
 
     # Encoder models take no --prompt and emit non-LM output (ASR transcription /
-    # segmentation). parakeet and mobilesam have dedicated run_from_bin scripts; swin
-    # doesn't yet, so it reruns its own _test.py for the second (cached) pass.
-    {"name": "parakeet",  "compile_script": "models/parakeet/parakeet_test.py",                "run_from_bin_script": "models/parakeet/parakeet_run_from_bin.py",   "pass_check": _check_parakeet},
-    {"name": "mobilesam", "compile_script": "models/mobilesam/mobilesam_test.py",              "run_from_bin_script": "models/mobilesam/mobilesam_run_from_bin.py", "pass_check": _check_nonempty},
+    # segmentation). All now rerun their own _test.py for the second (cached) pass
+    # instead of a dedicated run_from_bin script (see note above on qwen2.5_vl_3b).
+    {"name": "parakeet",  "compile_script": "models/parakeet/parakeet_test.py",                "run_from_bin_script": None,   "pass_check": _check_parakeet},
+    {"name": "mobilesam", "compile_script": "models/mobilesam/mobilesam_test.py",              "run_from_bin_script": None, "pass_check": _check_nonempty},
     {"name": "swin",      "compile_script": "models/swin/swin_test.py",                        "run_from_bin_script": None,                                          "pass_check": _check_nonempty},
 ]
 
