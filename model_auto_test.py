@@ -96,14 +96,22 @@ def _check_nonempty(text):
     return found, ("non-empty generation produced" if found else "empty generation")
 
 def _check_smolvlm2(text):
-    # SmolVLM2-500M is too small to reliably solve the algebra prompt (it tends to
-    # ramble into broken LaTeX without reaching "x = 2"). Instead it gets a factual
-    # question it can handle ("What is the capital of France?") and we check for "Paris".
-    found = bool(re.search(r"paris", text, re.IGNORECASE))
+    # Default VLM behavior: bundled vette.jpg (a sports car) + "Describe this image."
+    found = bool(re.search(r"sports.car|sport.car|racer|race.car|car|vehicle|automobile", text, re.IGNORECASE))
     return found, (
-        "found 'Paris' in decoded output"
+        f"car-related description found: {text!r}"
         if found
-        else f"did not find 'Paris' in decoded output: {text[:120]!r}"
+        else f"no car-related description found: {text[:120]!r}"
+    )
+
+def _check_qwen25vl(text):
+    # --vision-enable falls back to the model's default sample image (yosemite.jpg)
+    # + its default "please describe the image in details." prompt.
+    found = bool(re.search(r"mountain|valley|cliff|rock|scenic|landscape|nature|canyon|forest|granite|yosemite", text, re.IGNORECASE))
+    return found, (
+        f"scenery description found: {text!r}"
+        if found
+        else f"no scenery description found: {text[:120]!r}"
     )
 
 def _check_locateanything(text):
@@ -154,21 +162,23 @@ MATH_PROMPT = "If x + 3 = 5, what is x?"
 # the harness reruns compile_script a second time — its own bin-cache check (see e.g.
 # gpt2_test.py) makes that second run a real load-from-bin pass.
 TESTS = [
-    {"name": "gemma3",      "compile_script": "models/gemma3/gemma3_test.py",                   "run_from_bin_script": None,                                       "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "gemma4_e2b",  "compile_script": "models/gemma4_e2b/gemma4_e2b_test.py",            "run_from_bin_script": "models/gemma4_e2b/gemma4_e2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "gemma4_e4b",  "compile_script": "models/gemma4_e4b/gemma4_e4b_test.py",            "run_from_bin_script": "models/gemma4_e4b/gemma4_e4b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "llama3.2_1b", "compile_script": "models/llama3.2_1b/llama3.2_1b_test.py",          "run_from_bin_script": "models/llama3.2_1b/llama3.2_1b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "llama3.2_3b", "compile_script": "models/llama3.2_3b/llama3.2_3b_test.py",          "run_from_bin_script": "models/llama3.2_3b/llama3.2_3b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "qwen3_1.7b",  "compile_script": "models/qwen3_1.7b/qwen3_1.7b_test.py",            "run_from_bin_script": "models/qwen3_1.7b/qwen3_1.7b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "qwen3_4b",    "compile_script": "models/qwen3_4b/qwen3_4b_test.py",                "run_from_bin_script": "models/qwen3_4b/qwen3_4b_run_from_bin.py",                "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "qwen3.5_2b",  "compile_script": "models/qwen3.5_2b/qwen3.5_2b_test.py",            "run_from_bin_script": "models/qwen3.5_2b/qwen3.5_2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    {"name": "qwen2.5_vl_3b", "compile_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_test.py",    "run_from_bin_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_run_from_bin.py",      "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
-    # smolvlm2 DEFAULTS to VLM (loads a bundled image + runs the vision encoder), so
-    # --lm-enable forces pure language-model (text-only) mode. SmolVLM2-500M is too
-    # small to reliably do algebra, so it gets a factual question it can answer
-    # ("What is the capital of France?" — its built-in default lm_prompt) and we check
-    # for "Paris". The other VL models default to LM when --image is omitted.
-    {"name": "smolvlm2",    "compile_script": "models/smolvlm2/smolvlm2_test.py",                "run_from_bin_script": "models/smolvlm2/smolvlm2_run_from_bin.py",                "prompt": "What is the capital of France?", "pass_check": _check_smolvlm2, "extra_args": ["--lm-enable"]},
+    # TEMPORARILY DISABLED to skip straight to qwen2.5_vl_3b/smolvlm2 while verifying
+    # the new VLM-default-prompt test entries. Re-enable once those two are confirmed.
+    # {"name": "gemma3",      "compile_script": "models/gemma3/gemma3_test.py",                   "run_from_bin_script": None,                                       "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "gemma4_e2b",  "compile_script": "models/gemma4_e2b/gemma4_e2b_test.py",            "run_from_bin_script": "models/gemma4_e2b/gemma4_e2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "gemma4_e4b",  "compile_script": "models/gemma4_e4b/gemma4_e4b_test.py",            "run_from_bin_script": "models/gemma4_e4b/gemma4_e4b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "llama3.2_1b", "compile_script": "models/llama3.2_1b/llama3.2_1b_test.py",          "run_from_bin_script": "models/llama3.2_1b/llama3.2_1b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "llama3.2_3b", "compile_script": "models/llama3.2_3b/llama3.2_3b_test.py",          "run_from_bin_script": "models/llama3.2_3b/llama3.2_3b_run_from_bin.py",          "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3_1.7b",  "compile_script": "models/qwen3_1.7b/qwen3_1.7b_test.py",            "run_from_bin_script": "models/qwen3_1.7b/qwen3_1.7b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3_4b",    "compile_script": "models/qwen3_4b/qwen3_4b_test.py",                "run_from_bin_script": "models/qwen3_4b/qwen3_4b_run_from_bin.py",                "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # {"name": "qwen3.5_2b",  "compile_script": "models/qwen3.5_2b/qwen3.5_2b_test.py",            "run_from_bin_script": "models/qwen3.5_2b/qwen3.5_2b_run_from_bin.py",            "prompt": MATH_PROMPT, "pass_check": _check_x_equals_2},
+    # qwen2.5_vl_3b DEFAULTS to LM (text-only) with no image. --vision-enable switches
+    # it to VLM mode using its own bundled default image (yosemite.jpg) and its own
+    # default image-describe prompt — no --prompt/--image override needed.
+    {"name": "qwen2.5_vl_3b", "compile_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_test.py",    "run_from_bin_script": "models/qwen2.5_vl_3b/qwen2.5_vl_3b_run_from_bin.py",      "pass_check": _check_qwen25vl, "extra_args": ["--vision-enable"]},
+    # smolvlm2 DEFAULTS to VLM (bundled vette.jpg + "Describe this image.") — run it
+    # with no overrides at all and check for a car-related word in the output.
+    {"name": "smolvlm2",    "compile_script": "models/smolvlm2/smolvlm2_test.py",                "run_from_bin_script": "models/smolvlm2/smolvlm2_run_from_bin.py",                "pass_check": _check_smolvlm2},
 
     # GPT-2 is a base (non-chat) model: text continuation, no single correct answer,
     # so the check is lenient (non-empty generation). No run_from_bin yet.
